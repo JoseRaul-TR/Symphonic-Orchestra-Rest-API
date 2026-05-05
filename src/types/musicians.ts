@@ -1,0 +1,47 @@
+// src/types/musicians.ts
+export type Section =
+  | "Strings"
+  | "Woodwinds"
+  | "Brass"
+  | "Percussion"
+  | "Harp & Piano";
+
+export type MainInstrument =
+  | "Violin I"
+  | "Violin II"
+  | "Viola"
+  | "Cello"
+  | "Double Bass"
+  | "Flute"
+  | "Oboe"
+  | "Clarinet"
+  | "Bassoon"
+  | "Horn"
+  | "Trumpet"
+  | "Trombone"
+  | "Tuba"
+  | "Timpani"
+  | "Percussion"
+  | "Harp"
+  | "Piano";
+
+export interface Musician {
+  id: number;
+  name: string;
+  surname: string;
+  birth_date: string | Date;
+  orchestra_member: boolean;
+  join_date?: string | Date | null;
+  nationality: string;
+  section?: Section | null;
+  main_instrument?: MainInstrument | null;
+  role?: string | null;
+  salary_per_day?: number | null;
+  created_at?: Date;
+  updated_at?: Date;
+}
+
+export type CreateMusicianDTO = Omit<
+  Musician,
+  "id" | "created_at" | "updated_at"
+>;

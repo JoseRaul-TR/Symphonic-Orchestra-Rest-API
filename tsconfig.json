@@ -8,14 +8,13 @@
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
-    "target": "esnext",
+    "target": "es2022",
     "moduleResolution": "nodenext",
     "rootDir": "./src",
     "outDir": "./dist",
-    // "types": [],
     // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
+    "lib": ["esnext"],
+    "types": ["node"],
     // and npm install -D @types/node
 
     // Other Outputs
@@ -26,6 +25,7 @@
     // Stricter Typechecking Options
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
 
     // Style Options
     "noImplicitReturns": true,
@@ -42,7 +42,9 @@
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
