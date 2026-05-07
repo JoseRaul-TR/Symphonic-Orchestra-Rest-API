@@ -16,13 +16,8 @@ export const instrumentsService = {
 
   // Combined fetch with metadata
   getInventoryWithOwners: async (): Promise<InstrumentWithOwner[]> => {
-    const sql = `
-       SELECT i.id, i.type, i.brand, i.owner_type, 
-             m.name AS owner_name, m.surname AS owner_surname
-      FROM instruments i
-      LEFT JOIN musicians m ON i.owner_id = m.id
-    `;
-    // TODO -> Nota: He simplificado el SELECT para el ejemplo
+    const sql =
+      "SELECT i.*, m.name AS owner_name, m.surname AS owner_surname FROM instruments i LEFT JOIN musicians m ON i.owner_id = m.id";
     return await query<InstrumentWithOwner[]>(sql);
   },
 
