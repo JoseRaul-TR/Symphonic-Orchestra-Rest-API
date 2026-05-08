@@ -1,17 +1,23 @@
-// src/middleware/validateMusician.ts§
+// src/middleware/validateMusicians.ts
+
 // Mirrors the three CHECK constraints defined in the musicians table:
 //
 //   chk_join_date    → non-members cannot have a join_date
 //   chk_member_fields → members MUST have section, main_instrument, role, salary_per_day
 //   chk_non_member   → non-members MUST NOT have those fields
 
-import { AppError } from "../utils/AppError.ts"; 
+import { AppError } from "../utils/AppError.ts";
 import type { CreateMusicianDTO } from "../types/musicians.ts";
 
 type MusicianData = Partial<CreateMusicianDTO>;
 
-const MEMBER_REQUIRED = ["section", "main_instrument", "role", "salary_per_day"] as const;
-const MEMBER_ONLY     = [...MEMBER_REQUIRED, "join_date"] as const;
+const MEMBER_REQUIRED = [
+  "section",
+  "main_instrument",
+  "role",
+  "salary_per_day",
+] as const;
+const MEMBER_ONLY = [...MEMBER_REQUIRED, "join_date"] as const;
 
 export const validateMusicianRules = (data: MusicianData): void => {
   if (data.orchestra_member === undefined) return;

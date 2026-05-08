@@ -62,3 +62,13 @@ export type CreateMusicianDTO = Omit<
   Musician,
   "id" | "created_at" | "updated_at"
 >;
+
+export interface MusicianFilters {
+  orchestra_member?: boolean;
+  nationality?: string;
+  section?: Section;
+  main_instrument?: MainInstrument;
+  role?: Role;
+  sortBy?: string;
+  order?: "ASC" | "DESC";
+}

@@ -17,7 +17,8 @@ export const pool = mysql.createPool({
   // decimal(8, 2) -> number (salary_per_day.musicians)
   typeCast(field, next) {
     if (field.type === "TINY" && field.length === 1) {
-      return field.string() === "1";
+      const val = field.string();
+      return val === null ? null : val === "1";
     }
     if (field.type === "NEWDECIMAL") {
       const val = field.string();
@@ -32,13 +33,13 @@ export const query = async <T = any>(
   sql: string,
   params: any[] = [],
 ): Promise<T> => {
-  const [rows] = await pool.execute(sql, params);
+  const [rows] = await pool.query(sql, params);
   return rows as T;
 };
 
 // Test connection
 export const testConnection = async (): Promise<void> => {
   const conn = await pool.getConnection();
-  console.log("Connecting to MySQL database.\n");
+  console.log("Ansluter till MySQL-databasen.");
   conn.release();
 };

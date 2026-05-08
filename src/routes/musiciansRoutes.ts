@@ -1,14 +1,17 @@
 // src/routes/musiciansRoutes.ts
 import { Router } from "express";
-import * as musiciansController from "../controllers/musiciansController.ts";
+import * as ctrl from "../controllers/musiciansController.ts";
+import { validateId } from "../middleware/validateId.ts";
 
 const router = Router();
 
-router.get("/", musiciansController.getMusicians);
-router.get("/:id", musiciansController.getMusicianById);
-router.post("/", musiciansController.createMusician);
-router.put("/:id", musiciansController.updateMusician);
-router.patch("/:id", musiciansController.updateMusician); // same handler than PUT for partial update
-router.delete("/:id", musiciansController.deleteMusician);
+router.get("/", ctrl.getMusicians);
+router.post("/", ctrl.createMusician);
+
+// Routes with ID validation
+router.get("/:id", validateId, ctrl.getMusicianById);
+router.put("/:id", validateId, ctrl.updateMusician);
+router.patch("/:id", validateId, ctrl.updateMusician); // same handler than PUT for partial update
+router.delete("/:id", validateId, ctrl.deleteMusician);
 
 export default router;

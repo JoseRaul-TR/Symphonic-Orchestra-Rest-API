@@ -1,4 +1,4 @@
-// src/types/instrument.ts
+// src/types/instruments.ts
 export type OwnerType = "Orchestra" | "Musician" | "Rent";
 
 export interface Instrument {
@@ -16,6 +16,21 @@ export interface Instrument {
   owner_type: OwnerType;
   owner_id?: number | null; // FK -> musicians.id
   rent_fee_per_day?: number | null;
+  created_at?: Date;
+  updated_at?: Date;
+}
+
+export type CreateInstrumentDTO = Omit<
+  Instrument,
+  "id" | "created_at" | "updated_at"
+>;
+
+export interface InstrumentFilters {
+  type?: string;
+  brand?: string;
+  owner_type?: OwnerType;
+  sortBy?: string;
+  order?: "ASC" | "DESC";
 }
 
 // Combined Interface

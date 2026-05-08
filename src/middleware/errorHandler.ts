@@ -1,6 +1,7 @@
-// src/middleware/errorHandler.js
+// src/middleware/errorHandler.ts
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/AppError.ts";
+import { logError } from "../utils/logger.ts";
 
 export const errorHandler = (
   err: any,
@@ -9,6 +10,9 @@ export const errorHandler = (
   _next: NextFunction,
 ) => {
   let error = { ...err, message: err.message };
+
+  // Log the error before transforming the messages
+  logError(err);
 
   // MySQL Specific Errors
   if (err.code === "ER_DUP_ENTRY"){
@@ -30,7 +34,7 @@ export const errorHandler = (
   const message: string =
     statusCode === 500 ? "Internt serverfel." : error.message;
 
-  if (statusCode === 500) console.error("Critical error:", err);
+  if (statusCode === 500) console.error("KRITISKT FEL:", err);
 
   res.status(statusCode).json({ error: message });
 };

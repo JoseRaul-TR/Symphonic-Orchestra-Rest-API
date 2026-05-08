@@ -3,6 +3,7 @@ import "dotenv/config";
 import app from "./app.ts";
 import { testConnection, pool } from "./config/db.ts";
 import { Server } from "node:http";
+import { validateEnv } from "./config/env.ts";
 
 const PORT = process.env.PORT ?? 3000;
 let server: Server;
@@ -35,7 +36,7 @@ process.on("SIGINT", () => shutdownServer("SIGINT")); // Ctrl+C
 process.stdin.on("data", (data) => {
   const input = data.toString().trim().toLowerCase();
   if (
-    ["quit", "close", "bye", "exit", "ciao", "hasta la vista"].includes(input)
+    ["quit", "close", "bye", "exit", "ciao", "hasta la vista", "vi ses"].includes(input)
   ) {
     shutdownServer("stdin");
   }
@@ -43,12 +44,14 @@ process.stdin.on("data", (data) => {
 
 const startServer = async () => {
   try {
-    // 1. Check that connection with DB
+    // 1. Check that all the environment variables exist.
+    await validateEnv();
+    // 2. Check that connection with DB
     await testConnection();
-    console.log("Databasanslutning lyckades.\n");
-    // 2. Start the server
+    console.log("Databasanslutning lyckades.");
+    // 3. Start the server
     server = app.listen(PORT, () => {
-      console.log(`Server körs på http://localhost:${PORT}`);
+      console.log(`-> Server körs på http://localhost:${PORT} <–`);
       console.log('Skriv "exit" för att stänga ner kontrollerat.');
     });
   } catch (err: any) {
