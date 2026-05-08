@@ -1,14 +1,15 @@
-// src/app.js
+// src/app.ts
 import express from "express";
 import { AppError } from "./utils/AppError.ts";
 import { errorHandler } from "./middleware/errorHandler.ts";
+import musiciansRoutes from "./routes/musiciansRoutes.ts";
 import instrumentsRoutes from "./routes/instrumentsRoutes.ts";
 
 const app = express();
 app.use(express.json());
 
-// TODO -> app.use("api/musicians", musiciansRoutes)
-app.use("/api/instruments", instrumentsRoutes)
+app.use("/api/musicians", musiciansRoutes)
+app.use("/api/instruments", instrumentsRoutes);
 
 // "404 Page Not Found" (Catch-all)
 app.use((req, res, next) => {

@@ -11,10 +11,27 @@ export const pool = mysql.createPool({
   database: process.env.DB_NAME!,
   waitForConnections: true,
   connectionLimit: 10,
+
+  // Fix mysql2 type mismatches:
+  // tinyint(1) -> boolean (orchestra_member.musicians)
+  // decimal(8, 2) -> number (salary_per_day.musicians)
+  typeCast(field, next) {
+    if (field.type === "TINY" && field.length === 1) {
+      return field.string() === "1";
+    }
+    if (field.type === "NEWDECIMAL") {
+      const val = field.string();
+      return val === null ? null : parseFloat(val);
+    }
+    return next();
+  },
 });
 
 // Help functions to not repeat [rows] in every model
-export const query = async <T = any>(sql: string, params: any[] = []): Promise<T> => {
+export const query = async <T = any>(
+  sql: string,
+  params: any[] = [],
+): Promise<T> => {
   const [rows] = await pool.execute(sql, params);
   return rows as T;
 };
@@ -22,6 +39,6 @@ export const query = async <T = any>(sql: string, params: any[] = []): Promise<T
 // Test connection
 export const testConnection = async (): Promise<void> => {
   const conn = await pool.getConnection();
-  console.log("Connecting to MySQL database.\n")
+  console.log("Connecting to MySQL database.\n");
   conn.release();
 };

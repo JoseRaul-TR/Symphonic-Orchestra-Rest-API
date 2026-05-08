@@ -8,19 +8,27 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction,
 ) => {
-  let error = { ...err };
-  error.message = err.message;
+  let error = { ...err, message: err.message };
 
   // MySQL Specific Errors
-  if (err.code === "ER_DUP_ENTRY") {
-    error = new AppError("Fordonet finns redan.", 400);
-  }
-  if (err.code === "ER_DATA_TOO_LONG") {
-    error = new AppError("Ett eller flera fält är för långa.", 400);
-  }
-
-  const statusCode = error.statusCode ?? 500;
-  const message = statusCode === 500 ? "Internt serverfel." : error.message;
+  if (err.code === "ER_DUP_ENTRY"){
+    error = new AppError("Posten finns redan.", 409);}
+  if (err.code === "ER_DATA_TOO_LONG"){
+    error = new AppError("Ett eller flera fält är för långa.", 400);}
+  if (err.code === "ER_BAD_NULL_ERROR"){
+    error = new AppError("Ett obligatoriskt fält saknar värde.", 400);}
+  if (err.code === "ER_NO_REFERENCED_ROW_2"){
+    error = new AppError("Refererat id finns inte i databasen.", 400);}
+  // Fired if a CHECK constraint is violated at DB level
+  if (err.code === "ER_CHECK_CONSTRAINT_VIOLATED")
+    error = new AppError(
+      "Datakontroll misslyckades: fälten är inkonsistenta.",
+      400,
+    );
+    
+  const statusCode: number = error.statusCode ?? 500;
+  const message: string =
+    statusCode === 500 ? "Internt serverfel." : error.message;
 
   if (statusCode === 500) console.error("Critical error:", err);
 

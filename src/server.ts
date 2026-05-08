@@ -1,4 +1,4 @@
-// src/server.js
+// src/server.ts
 import "dotenv/config";
 import app from "./app.ts";
 import { testConnection, pool } from "./config/db.ts";

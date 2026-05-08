@@ -1,3 +1,4 @@
+// src/routes/instrumentsRoutes.ts
 import { Router } from "express";
 import * as instrumentsController from "../controllers/instrumentsController.ts";
 

@@ -1,3 +1,4 @@
+// src/services/instrumentsService.ts
 import { query } from "../config/db.ts";
 import type { Instrument, InstrumentWithOwner } from "../types/instrument.ts";
 

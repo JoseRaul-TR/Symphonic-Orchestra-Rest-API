@@ -25,6 +25,23 @@ export type MainInstrument =
   | "Harp"
   | "Piano";
 
+export type Role =
+  | "1st Concertmaster"
+  | "Concertmaster"
+  | "1st Principal"
+  | "1st Principal of the 2nd Violins"
+  | "Principal 2nd Violin"
+  | "1st Principal Viola"
+  | "1st Principal Cello"
+  | "1st Principal Bass"
+  | "Principal"
+  | "Piccolo"
+  | "English Horn"
+  | "Bass Clarinet"
+  | "Contrabassoon"
+  | "Bass Trombone"
+  | "Tutti";
+
 export interface Musician {
   id: number;
   name: string;
@@ -35,7 +52,7 @@ export interface Musician {
   nationality: string;
   section?: Section | null;
   main_instrument?: MainInstrument | null;
-  role?: string | null;
+  role?: Role | null;
   salary_per_day?: number | null;
   created_at?: Date;
   updated_at?: Date;
