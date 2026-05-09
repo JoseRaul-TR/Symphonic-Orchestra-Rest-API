@@ -1,16 +1,35 @@
 // src/controllers/musiciansController.ts
-import type { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler.ts";
 import { AppError } from "../utils/AppError.ts";
 import { musiciansService } from "../services/musiciansService.ts";
 import { validateMusicianRules } from "../middleware/validateMusicians.ts";
+import type { MusicianFilters } from "../types/musicians.ts";
+import type { ParsedQs } from "qs";
+
+/** Safely parses a pagination query param with a fallback default */
+const parsePaginationParam = (val: unknown, def: number): number =>
+  parseInt(String(val ?? def)) || def;
 
 export const getMusicians = asyncHandler(async (req, res) => {
-  const musicians = await musiciansService.getAll(req.query as any);
-  res.json({ count: musicians.length, data: musicians });
+  const { page: pageStr, limit: limitStr, ...filterQuery } = req.query;
+
+  const page = Math.max(1, parsePaginationParam(pageStr, 1));
+  const limit = Math.min(100, Math.max(1, parsePaginationParam(limitStr, 20)));
+
+  const result = await musiciansService.getAll(
+    filterQuery as MusicianFilters,
+    page,
+    limit,
+  );
+  res.json(result);
 });
 
-export const getMusicianById = asyncHandler(async (req, res) => {
+export const getMusicianStats = asyncHandler(async (_req, res) => {
+  const stats = await musiciansService.getStats();
+  res.json(stats);
+});
+
+export const getMusicianById = asyncHandler(async (_req, res) => {
   const musician = await musiciansService.getByID(res.locals.id);
   if (!musician) throw new AppError("Musikern hittades inte.", 404);
   res.json(musician);
@@ -27,14 +46,13 @@ export const updateMusician = asyncHandler(async (req, res) => {
   const current = await musiciansService.getByID(id);
   if (!current) throw new AppError("Musikern hittades inte.", 404);
 
-  const merged = { ...current, ...req.body };
-  validateMusicianRules(merged);
+  validateMusicianRules({ ...current, ...req.body });
 
   const updated = await musiciansService.update(id, req.body);
   res.json(updated);
 });
 
-export const deleteMusician = asyncHandler(async (req, res) => {
+export const deleteMusician = asyncHandler(async (_req, res) => {
   const deleted = await musiciansService.delete(res.locals.id);
   if (!deleted) throw new AppError("Musikern hittades inte.", 404);
   res.status(204).send();

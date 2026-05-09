@@ -5,14 +5,15 @@ import { logError } from "../utils/logger.ts";
 
 export const errorHandler = (
   err: any,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction,
 ) => {
   let error = { ...err, message: err.message };
+  const ip = req.ip ?? req.socket.remoteAddress ?? "Unknown";
 
-  // Log the error before transforming the messages
-  logError(err);
+  // Log the error before transforming the message (captures the original error)
+  logError(err, ip);
 
   // MySQL Specific Errors
   if (err.code === "ER_DUP_ENTRY"){

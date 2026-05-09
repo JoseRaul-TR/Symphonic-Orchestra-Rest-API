@@ -1,12 +1,14 @@
 // src/services/instrumentsService.ts
 import { query } from "../config/db.ts";
 import { buildWhereClause } from "../utils/queryHelper.ts";
+import { AppError } from "../utils/AppError.ts";
 import type {
   CreateInstrumentDTO,
   Instrument,
   InstrumentFilters,
+  InstrumentWithOwner,
 } from "../types/instruments.ts";
-import { AppError } from "../utils/AppError.ts";
+import type { PaginatedResult } from "../types/pagination.ts";
 
 const FILTERABLE_COLUMNS = new Set(["type", "brand", "owner_type", "owner_id"]);
 
@@ -40,38 +42,63 @@ const UPDATABLE_FIELDS: (keyof CreateInstrumentDTO)[] = [
 ];
 
 export const instrumentsService = {
-  /** Get all instruments with dynamic filters and sort options */
-  getAll: async (filters: InstrumentFilters) => {
+  getAll: async (
+    filters: InstrumentFilters,
+    page: number,
+    limit: number,
+  ): Promise<PaginatedResult<Instrument>> => {
     const { whereSql, params } = buildWhereClause(filters, FILTERABLE_COLUMNS);
+
+    const countRows = await query<Array<{ total: number }>>(
+      `SELECT COUNT(*) AS total FROM instruments${whereSql}`,
+      params,
+    );
+    const total = Number(countRows[0]?.total ?? 0);
+
     let sql = `SELECT * FROM instruments${whereSql}`;
 
     if (filters.sortBy) {
       const isValue = filters.sortBy === "value";
-      const safeCol = isValue
-        ? "COALESCE(estimated_value, purchase_price)"
-        : null;
-
       if (!isValue && !ALLOWED_SORT_COLUMNS.has(filters.sortBy)) {
         throw new AppError("Ogiltigt sorteringsfält.", 400);
       }
-
-      const col = safeCol ?? filters.sortBy;
+      const col = isValue
+        ? "COALESCE(estimated_value, purchase_price)"
+        : filters.sortBy;
       const order = filters.order === "DESC" ? "DESC" : "ASC";
       sql += ` ORDER BY ${col} ${order}`;
     }
-    return await query(sql, params);
+
+    const offset = (page - 1) * limit;
+    sql += " LIMIT ? OFFSET ?";
+
+    const data = await query<Instrument[]>(sql, [...params, limit, offset]);
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      },
+    };
   },
 
-  getByID: async (id: number) => {
-    const rows = await query("SELECT * FROM instruments WHERE id = ?", [id]);
+  getByID: async (id: number): Promise<Instrument | null> => {
+    const rows = await query<Instrument[]>(
+      "SELECT * FROM instruments WHERE id = ?",
+      [id],
+    );
     return rows[0] ?? null;
   },
 
-  /** Inserts a new instrument using only allowed fields */
   create: async (data: CreateInstrumentDTO): Promise<Instrument> => {
-    const fields = UPDATABLE_FIELDS;
-    const values = fields.map((f) => data[f] ?? null);
-    const sql = `INSERT INTO instruments (${fields.join(", ")}) VALUES (${fields.map(() => "?").join(", ")})`;
+    const values = UPDATABLE_FIELDS.map((f) => data[f] ?? null);
+    const sql = `INSERT INTO instruments (${UPDATABLE_FIELDS.join(", ")}) VALUES (${UPDATABLE_FIELDS.map(() => "?").join(", ")})`;
     const result = await query<{ insertId: number }>(sql, values);
 
     const created = await instrumentsService.getByID(result.insertId);
@@ -80,7 +107,6 @@ export const instrumentsService = {
     return created;
   },
 
-  /** Updates only the fields present in the body that are in the whitelist */
   update: async (
     id: number,
     data: Partial<CreateInstrumentDTO>,
@@ -94,7 +120,7 @@ export const instrumentsService = {
     return instrumentsService.getByID(id);
   },
 
-  delete: async (id: number) => {
+  delete: async (id: number): Promise<boolean> => {
     const result = await query<{ affectedRows: number }>(
       "DELETE FROM instruments WHERE id = ?",
       [id],
@@ -102,9 +128,11 @@ export const instrumentsService = {
     return result.affectedRows > 0;
   },
 
-  getInventoryWithOwners: async () => {
-    const sql =
-      "SELECT i.*, m.name AS owner_name, m.surname AS owner_surname FROM instruments i LEFT JOIN musicians m ON i.owner_id = m.id";
-    return await query(sql);
+  getInventoryWithOwners: async (): Promise<InstrumentWithOwner[]> => {
+    return await query<InstrumentWithOwner[]>(
+      `SELECT i.*, m.name AS owner_name, m.surname AS owner_surname
+       FROM instruments i
+       LEFT JOIN musicians m ON i.owner_id = m.id`,
+    );
   },
 };

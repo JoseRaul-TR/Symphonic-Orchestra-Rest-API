@@ -5,12 +5,13 @@ const REQUIRED_VARS = [
   "DB_USER",
   "DB_PASSWORD",
   "DB_NAME",
+  "API_KEY",
 ] as const;
 
-export const validateEnv = () => {
+export const validateEnv = (): void => {
   const missing = REQUIRED_VARS.filter((v) => !process.env[v]);
   if (missing.length > 0) {
     throw new Error(`Saknade miljövariabler: ${missing.join(", ")}`);
   }
-  return console.log("Alla miljövariabler finns.");
+  console.log("Alla miljövariabler finns.");
 };
