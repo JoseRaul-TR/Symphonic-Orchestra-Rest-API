@@ -7,7 +7,7 @@ const REQUIRED_VARS = [
   "DB_NAME",
 ] as const;
 
-export const validateEnv = async () => {
+export const validateEnv = () => {
   const missing = REQUIRED_VARS.filter((v) => !process.env[v]);
   if (missing.length > 0) {
     throw new Error(`Saknade miljövariabler: ${missing.join(", ")}`);

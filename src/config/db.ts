@@ -1,4 +1,4 @@
-// src/config/db.js
+// src/config/db.ts
 import "dotenv/config";
 import mysql from "mysql2/promise";
 
