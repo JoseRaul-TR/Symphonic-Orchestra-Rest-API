@@ -14,7 +14,7 @@ app.use(requestLogger);
 
 // health check – not versioned, always available
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", uptime: process.uptime(), timestamp: new Date() });
+  res.json({ Status: "OK", Uptime: process.uptime(), Timestamp: new Date().toISOString() });
 });
 
 // Versioned API

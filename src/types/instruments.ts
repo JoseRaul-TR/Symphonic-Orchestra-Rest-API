@@ -29,6 +29,7 @@ export interface InstrumentFilters {
   type?: string;
   brand?: string;
   owner_type?: OwnerType;
+  owner_id?: number;
   sortBy?: string;
   order?: "ASC" | "DESC";
 }

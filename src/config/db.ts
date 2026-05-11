@@ -1,6 +1,7 @@
 // src/config/db.ts
 import "dotenv/config";
 import mysql from "mysql2/promise";
+import { terminal } from "../utils/terminalColors.ts";
 
 // Connection pool
 export const pool = mysql.createPool({
@@ -39,7 +40,8 @@ export const query = async <T = any>(
 
 // Test connection
 export const testConnection = async (): Promise<void> => {
+  terminal.info("Ansluter till MySQL-databasen.");
   const conn = await pool.getConnection();
-  console.log("Ansluter till MySQL-databasen.");
+  terminal.success("MySQL-anslutning etablerad.");
   conn.release();
 };

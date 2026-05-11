@@ -48,7 +48,9 @@ export const deleteInstrument = asyncHandler(async (_req, res) => {
   res.status(204).send();
 });
 
-export const getInventoryWithOwners = asyncHandler(async (_req, res) => {
-  const data = await instrumentsService.getInventoryWithOwners();
+export const getInventoryWithOwners = asyncHandler(async (req, res) => {
+  const data = await instrumentsService.getInventoryWithOwners(
+    req.query as InstrumentFilters,
+  );
   res.json({ count: data.length, data });
 });

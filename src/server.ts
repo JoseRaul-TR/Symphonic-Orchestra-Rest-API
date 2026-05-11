@@ -4,13 +4,14 @@ import app from "./app.ts";
 import { testConnection, pool } from "./config/db.ts";
 import { Server } from "node:http";
 import { validateEnv } from "./config/env.ts";
+import { terminal } from "./utils/terminalColors.ts";
 
 const PORT = process.env.PORT ?? 3000;
 let server: Server;
 
-// --- Controlled Server Shutdown (one function, three ways of input) ---
+// --- Controlled Server Shutdown ---
 const shutdownServer = async (trigger: string) => {
-  console.log(`Avslutar servern (${trigger})...\n`);
+  terminal.shutdown(`Avslutar servern (${trigger})...\n`);
 
   try {
     if (server) {
@@ -20,10 +21,10 @@ const shutdownServer = async (trigger: string) => {
       );
     }
     await pool.end();
-    console.log("Servern och database stängda. ¡Hasta la vista!\n");
+    terminal.success("Servern och database stängda. ¡Hasta la vista!\n");
     process.exit(0);
   } catch (err: any) {
-    console.error("Fel vid nedstängning:", err.message);
+    terminal.error(`Fel vid nedstängning: ${err.message}`);
     process.exit(1);
   }
 };
@@ -56,14 +57,18 @@ const startServer = async () => {
     validateEnv();
     // 2. Check that connection with DB
     await testConnection();
-    console.log("Databasanslutning lyckades.");
+    terminal.db("Databasanslutning lyckades.");
     // 3. Start the server
     server = app.listen(PORT, () => {
-      console.log(`-> Server körs på http://localhost:${PORT} <–`);
-      console.log('Skriv "exit" för att stänga ner kontrollerat.');
+      terminal.startup(
+        `-> Server körs på http://localhost:${PORT} <-`
+      );
+      terminal.info(
+        'Skriv "exit" för att stänga ner kontrollerat.',
+      );
     });
   } catch (err: any) {
-    console.error("Kunde inte starta servern:", err.message);
+    terminal.error(`Kunde inte starta servern: ${err.message}`);
     process.exit(1);
   }
 };

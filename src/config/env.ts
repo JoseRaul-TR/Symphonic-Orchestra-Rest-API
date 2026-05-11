@@ -1,4 +1,6 @@
 // src/config/env.ts
+import { terminal } from "../utils/terminalColors.ts";
+
 const REQUIRED_VARS = [
   "DB_HOST",
   "DB_PORT",
@@ -13,5 +15,5 @@ export const validateEnv = (): void => {
   if (missing.length > 0) {
     throw new Error(`Saknade miljövariabler: ${missing.join(", ")}`);
   }
-  console.log("Alla miljövariabler finns.");
+  terminal.success("Alla miljövariabler finns.");
 };

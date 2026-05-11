@@ -42,6 +42,30 @@ const UPDATABLE_FIELDS: (keyof CreateInstrumentDTO)[] = [
   "rent_fee_per_day",
 ];
 
+/**
+ * Builds a safe ORDER BY clause from validated query params.
+ *
+ * Supports the virtual field "value", which sorts by
+ * estimated_value with purchase_price as fallback.
+ */
+const buildOrderClause = (sortBy?: string, order?: "ASC" | "DESC"): string => {
+  if (!sortBy) return "";
+
+  const isValue = sortBy === "value";
+
+  if (!isValue && !ALLOWED_SORT_COLUMNS.has(sortBy)) {
+    throw new AppError("Ogiltigt sorteringsfält.", 400);
+  }
+
+  const column = isValue
+    ? "COALESCE(i.estimated_value, i.purchase_price)"
+    : sortBy.includes(".")
+      ? sortBy
+      : `i.${sortBy}`;
+
+  return ` ORDER BY ${column} ${order === "DESC" ? "DESC" : "ASC"}`;
+};
+
 export const instrumentsService = {
   getAll: async (
     filters: InstrumentFilters,
@@ -58,17 +82,7 @@ export const instrumentsService = {
 
     let sql = `SELECT * FROM instruments${whereSql}`;
 
-    if (filters.sortBy) {
-      const isValue = filters.sortBy === "value";
-      if (!isValue && !ALLOWED_SORT_COLUMNS.has(filters.sortBy)) {
-        throw new AppError("Ogiltigt sorteringsfält.", 400);
-      }
-      const col = isValue
-        ? "COALESCE(estimated_value, purchase_price)"
-        : filters.sortBy;
-      const order = filters.order === "DESC" ? "DESC" : "ASC";
-      sql += ` ORDER BY ${col} ${order}`;
-    }
+    sql += buildOrderClause(filters.sortBy, filters.order).replaceAll("i", "");
 
     const offset = (page - 1) * limit;
     sql += " LIMIT ? OFFSET ?";
@@ -121,11 +135,20 @@ export const instrumentsService = {
     return result.affectedRows > 0;
   },
 
-  getInventoryWithOwners: async (): Promise<InstrumentWithOwner[]> => {
-    return await query<InstrumentWithOwner[]>(
-      `SELECT i.*, m.name AS owner_name, m.surname AS owner_surname
-       FROM instruments i
-       LEFT JOIN musicians m ON i.owner_id = m.id`,
-    );
+  getInventoryWithOwners: async (
+    filters: InstrumentFilters,
+  ): Promise<InstrumentWithOwner[]> => {
+    const { whereSql, params } = buildWhereClause(filters, FILTERABLE_COLUMNS);
+
+    let sql = `SELECT i.*, CONCAT(m.surname, ", ", m.name) AS owner_name FROM instruments i LEFT JOIN musicians m ON i.owner_id = m.id`;
+
+    // WHERE clause must reference aliased FILTERABLE_COLUMNS
+    const aliasedWhere = whereSql.replaceAll(/(?<=WHERE |AND )(\w+)/g, "i.$1");
+
+    sql += aliasedWhere;
+
+    sql += buildOrderClause(filters.sortBy, filters.order);
+
+    return await query<InstrumentWithOwner[]>(sql, params);
   },
 };
