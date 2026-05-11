@@ -83,7 +83,6 @@ export const musiciansService = {
     sql += " LIMIT ? OFFSET ?";
 
     const data = await query<Musician[]>(sql, [...params, limit, offset]);
-    const totalPages = Math.ceil(total / limit);
 
     return {
       data,

@@ -74,7 +74,6 @@ export const instrumentsService = {
     sql += " LIMIT ? OFFSET ?";
 
     const data = await query<Instrument[]>(sql, [...params, limit, offset]);
-    const totalPages = Math.ceil(total / limit);
 
     return {
       data,

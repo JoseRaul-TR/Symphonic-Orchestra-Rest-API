@@ -16,7 +16,9 @@ import { AppError } from "../utils/AppError.ts";
 export const validateId = (req: Request, res: Response, next: NextFunction) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id <= 0) {
-    next(new AppError("Ogiltigt ID. ID måste vara ett positivt heltal.", 400));
+    return next(
+      new AppError("Ogiltigt ID. ID måste vara ett positivt heltal.", 400),
+    );
   }
   res.locals.id = id;
   next();

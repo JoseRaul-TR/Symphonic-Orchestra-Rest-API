@@ -36,7 +36,15 @@ process.on("SIGINT", () => shutdownServer("SIGINT")); // Ctrl+C
 process.stdin.on("data", (data) => {
   const input = data.toString().trim().toLowerCase();
   if (
-    ["quit", "close", "bye", "exit", "ciao", "hasta la vista", "vi ses"].includes(input)
+    [
+      "quit",
+      "close",
+      "bye",
+      "exit",
+      "ciao",
+      "hasta la vista",
+      "vi ses",
+    ].includes(input)
   ) {
     shutdownServer("stdin");
   }
@@ -45,7 +53,7 @@ process.stdin.on("data", (data) => {
 const startServer = async () => {
   try {
     // 1. Check that all the environment variables exist.
-    await validateEnv();
+    validateEnv();
     // 2. Check that connection with DB
     await testConnection();
     console.log("Databasanslutning lyckades.");
