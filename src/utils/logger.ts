@@ -2,16 +2,17 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const LOG_FILE = path.join(process.cwd(), "app.log");
+const ACCESS_LOG = path.join(process.cwd(), "access.log");
+const ERROR_LOG = path.join(process.cwd(), "error.log");
 
 /**
  * Appends a raw string message to the log file.
  * Logs a console warning if the write fails — never throws,
  * so a logging failure never crashes the application.
  */
-const writeToLog = async (message: string): Promise<void> => {
+const writeToLog = async (file: string, message: string): Promise<void> => {
   try {
-    await fs.appendFile(LOG_FILE, message, "utf-8");
+    await fs.appendFile(file, message, "utf-8");
   } catch {
     console.error("Kunde inte skriva till loggfilen.");
   }
@@ -30,7 +31,7 @@ const writeToLog = async (message: string): Promise<void> => {
  * @param durationMs - Time from request receipt to response finish, in milliseconds
  * @param ip         - Client IP; included only for mutations and error responses
  */
-export const logRequest = async (
+export const logAccess = async (
   method: string,
   url: string,
   status: number,
@@ -42,7 +43,7 @@ export const logRequest = async (
   const line = `[${timestamp}] ${method.padEnd(6)} ${status} ${String(durationMs).padStart(5)}ms ${url}${ipPart}\n`;
 
   console.log(line.trimEnd()); // visible in terminal during development
-  await writeToLog(line);
+  await writeToLog(ACCESS_LOG, line);
 };
 
 /**
@@ -60,5 +61,5 @@ export const logError = async (err: any, ip?: string): Promise<void> => {
     `[${timestamp}] ERROR | STATUS: ${err.statusCode ?? 500} | CODE: ${err.code ?? "N/a"}${ipPart} | ${err.message}\n` +
     `STACK: ${err.stack}\n${"-".repeat(60)}\n`;
 
-  await writeToLog(message);
+  await writeToLog(ERROR_LOG, message);
 };

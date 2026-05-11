@@ -1,6 +1,6 @@
 // src/middleware/requestLogger.ts
 import type { Request, Response, NextFunction } from "express";
-import { logRequest } from "../utils/logger.ts";
+import { logAccess } from "../utils/logger.ts";
 import { getClientIp } from "../utils/requestUtils.ts";
 
 // Methods that modify server state — their logs always include the client IP
@@ -29,7 +29,7 @@ export const requestLogger = (
     const status = res.statusCode;
     const includeIp = MUTATION_METHODS.has(req.method) || status >= 400;
 
-    logRequest(
+    logAccess(
       req.method,
       req.originalUrl,
       status,

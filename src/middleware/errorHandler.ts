@@ -19,7 +19,7 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction,
 ) => {
-  let error = { ...err, message: err.message };
+  let error = err;
   const ip = getClientIp(req);
 
   logError(err, ip); // log original error before transforming
