@@ -8,6 +8,7 @@ import type {
   InstrumentFilters,
   InstrumentWithOwner,
 } from "../types/instruments.ts";
+import { buildPaginationMeta } from "../utils/pagination.ts";
 import type { PaginatedResult } from "../types/pagination.ts";
 
 const FILTERABLE_COLUMNS = new Set(["type", "brand", "owner_type", "owner_id"]);
@@ -77,14 +78,7 @@ export const instrumentsService = {
 
     return {
       data,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      },
+      pagination: buildPaginationMeta(total, page, limit),
     };
   },
 

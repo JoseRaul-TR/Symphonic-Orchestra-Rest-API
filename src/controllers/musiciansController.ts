@@ -2,13 +2,9 @@
 import { asyncHandler } from "../utils/asyncHandler.ts";
 import { AppError } from "../utils/AppError.ts";
 import { musiciansService } from "../services/musiciansService.ts";
-import { validateMusicianRules } from "../middleware/validateMusicians.ts";
+import { validateMusicianRules } from "../middleware/validateMusician.ts";
+import { parsePaginationParam } from "../utils/pagination.ts";
 import type { MusicianFilters } from "../types/musicians.ts";
-import type { ParsedQs } from "qs";
-
-/** Safely parses a pagination query param with a fallback default */
-const parsePaginationParam = (val: unknown, def: number): number =>
-  parseInt(String(val ?? def)) || def;
 
 export const getMusicians = asyncHandler(async (req, res) => {
   const { page: pageStr, limit: limitStr, ...filterQuery } = req.query;
@@ -37,8 +33,7 @@ export const getMusicianById = asyncHandler(async (_req, res) => {
 
 export const createMusician = asyncHandler(async (req, res) => {
   validateMusicianRules(req.body);
-  const musician = await musiciansService.create(req.body);
-  res.status(201).json(musician);
+  res.status(201).json(await musiciansService.create(req.body));
 });
 
 export const updateMusician = asyncHandler(async (req, res) => {
@@ -47,9 +42,7 @@ export const updateMusician = asyncHandler(async (req, res) => {
   if (!current) throw new AppError("Musikern hittades inte.", 404);
 
   validateMusicianRules({ ...current, ...req.body });
-
-  const updated = await musiciansService.update(id, req.body);
-  res.json(updated);
+  res.json(await musiciansService.update(id, req.body));
 });
 
 export const deleteMusician = asyncHandler(async (_req, res) => {

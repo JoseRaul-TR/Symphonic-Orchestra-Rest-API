@@ -8,6 +8,7 @@ import type {
   MusicianFilters,
   Section,
 } from "../types/musicians.ts";
+import { buildPaginationMeta } from "../utils/pagination.ts";
 import type { PaginatedResult } from "../types/pagination.ts";
 
 type MusicianOverview = {
@@ -86,14 +87,7 @@ export const musiciansService = {
 
     return {
       data,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      },
+      pagination: buildPaginationMeta(total, page, limit),
     };
   },
 

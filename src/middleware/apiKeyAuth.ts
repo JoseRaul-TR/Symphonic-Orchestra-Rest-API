@@ -3,8 +3,17 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/AppError.ts";
 
 /**
- * Protects mutating endpoints (POST / PUT / PATCH / DELETE).
- * Clients must send the header: X-API-Key: <value of API_KEY in .env>
+ * Express middleware that guards mutating endpoints (POST / PUT / PATCH / DELETE)
+ * with a static API key passed via the X-API-Key request header.
+ *
+ * The expected key is read from the API_KEY environment variable at request time
+ * (not at module load), so changes to the env are picked up without restart.
+ *
+ * Usage in routes:
+ *   router.post("/", apiKeyAuth, ctrl.createMusician);
+ *
+ * curl usage:
+ *   curl -X POST ... -H "X-API-Key: your_key_here"
  */
 export const apiKeyAuth = (
   req: Request,
@@ -15,7 +24,7 @@ export const apiKeyAuth = (
   const expected = process.env.API_KEY;
 
   if (!provided || provided !== expected) {
-    return next(new AppError("Ogiltg eller saknad API-nyckel.", 401));
+    return next(new AppError("Ogiltig eller saknad API-nyckel.", 401));
   }
   next();
 };

@@ -6,6 +6,6 @@ import instrumentsRoutes from "./instrumentsRoutes.ts";
 const v1Router = Router();
 
 v1Router.use("/musicians", musicianRoutes);
-v1Router.use("./instruments", instrumentsRoutes);
+v1Router.use("/instruments", instrumentsRoutes);
 
 export default v1Router;

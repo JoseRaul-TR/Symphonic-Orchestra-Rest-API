@@ -2,24 +2,22 @@
 import { asyncHandler } from "../utils/asyncHandler.ts";
 import { AppError } from "../utils/AppError.ts";
 import { instrumentsService } from "../services/instrumentsService.ts";
-import { validateInstrumentRules } from "../middleware/validateInstruments.ts";
+import { validateInstrumentRules } from "../middleware/validateInstrument.ts";
+import { parsePaginationParam } from "../utils/pagination.ts";
 import type { InstrumentFilters } from "../types/instruments.ts";
-
-const parsePaginationParam = (val: unknown, def: number): number =>
-  parseInt(String(val ?? def)) || def;
 
 export const getInstruments = asyncHandler(async (req, res) => {
   const { page: pageStr, limit: limitStr, ...filterQuery } = req.query;
-
   const page = Math.max(1, parsePaginationParam(pageStr, 1));
   const limit = Math.min(100, Math.max(1, parsePaginationParam(limitStr, 20)));
 
-  const result = await instrumentsService.getAll(
-    filterQuery as InstrumentFilters,
-    page,
-    limit,
+  res.json(
+    await instrumentsService.getAll(
+      filterQuery as InstrumentFilters,
+      page,
+      limit,
+    ),
   );
-  res.json(result);
 });
 
 export const getInstrumentById = asyncHandler(async (_req, res) => {
@@ -33,19 +31,15 @@ export const createInstrument = asyncHandler(async (req, res) => {
     throw new AppError("Fälten 'type' och 'owner_type' är obligatoriska.", 400);
   }
   validateInstrumentRules(req.body);
-  const newInstrument = await instrumentsService.create(req.body);
-  res.status(201).json(newInstrument);
+  res.status(201).json(await instrumentsService.create(req.body));
 });
 
 export const updateInstrument = asyncHandler(async (req, res) => {
   const id = res.locals.id;
   const current = await instrumentsService.getByID(id);
   if (!current) throw new AppError("Instrumentet hittades inte.", 404);
-
   validateInstrumentRules({ ...current, ...req.body });
-
-  const updated = await instrumentsService.update(id, req.body);
-  res.json(updated);
+  res.json(await instrumentsService.update(id, req.body));
 });
 
 export const deleteInstrument = asyncHandler(async (_req, res) => {
