@@ -207,7 +207,6 @@ src/
 │   └── terminalColors.ts
 ├── app.ts
 └── server.ts
-
 ```
 
 ## Logging
