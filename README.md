@@ -170,15 +170,44 @@ curl -X POST "http://localhost:3000/api/v1/musicians/" \
 ```
 
 ## Project Structure
+
 ```
 src/
-├── config/ # env validation, DB pool, typed config object
-├── controllers/ # HTTP layer: parse request, send response
-├── middleware/ # auth, validation, error handling, logging
-├── routes/ # route definitions (versioned under /api/v1)
-├── services/ # business logic and DB queries
-├── types/ # TypeScript interfaces and DTOs
-└── utils/ # shared helpers (pagination, logging, async wrapper)
+├── config/         # env validation, DB pool, typed config object
+│   ├── db.ts
+│   └── env.ts
+├── controllers/    # HTTP layer: parse request, send response
+│   ├── instrumentsController.ts
+│   └── musiciansController.ts
+├── middleware/     # auth, validation, error handling, logging
+│   ├── auth.ts
+│   ├── errorHandler.ts
+│   ├── requestLogger.ts
+│   ├── validateId.ts
+│   ├── validateInstrument.ts
+│   └── validateMusician.ts
+├── routes/         # route definitions (versioned under /api/v1)
+│   ├── instrumentsRoutes.ts
+│   ├── musiciansRoutes.ts
+│   └── v1.ts
+├── services/       # business logic and DB queries
+│   ├── instrumentsService.ts
+│   └── musiciansService.ts
+├── types/          # TypeScript interfaces and DTOs
+│   ├── instruments.ts
+│   ├── musicians.ts
+│   └── pagination.ts
+├── utils/          # shared helpers (pagination, logging, async wrapper)
+│   ├── AppError.ts
+│   ├── asyncHandler.ts
+│   ├── logger.ts
+│   ├── pagination.ts
+│   ├── queryHelper.ts
+│   ├── requestUtils.ts
+│   └── terminalColors.ts
+├── app.ts
+└── server.ts
+
 ```
 
 ## Logging
