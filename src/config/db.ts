@@ -13,7 +13,7 @@ export const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
 
-  // Fix mysql2 type mismatches:
+  // Fix to mysql2 type mismatches:
   // tinyint(1) -> boolean (orchestra_member.musicians)
   // decimal(8, 2) -> number (salary_per_day.musicians)
   typeCast(field, next) {

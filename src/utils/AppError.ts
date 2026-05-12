@@ -1,4 +1,4 @@
-// src/utils/AppError.js
+// src/utils/AppError.ts
 
 /**
  * Custom error class that carries an HTTP status code alongside the message.

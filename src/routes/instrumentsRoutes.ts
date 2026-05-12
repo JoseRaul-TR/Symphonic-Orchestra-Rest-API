@@ -2,7 +2,7 @@
 import { Router } from "express";
 import * as ctrl from "../controllers/instrumentsController.ts";
 import { validateId } from "../middleware/validateId.ts";
-import { apiKeyAuth } from "../middleware/apiKeyAuth.ts";
+import { apiKeyAuth } from "../middleware/auth.ts";
 
 const router = Router();
 

@@ -1,3 +1,4 @@
+// src/utils/terminalColors.ts
 /**
  * ANSI escape codes for terminal colors/styles.
  * Reset MUST be appended after every colored string.

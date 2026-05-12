@@ -1,7 +1,7 @@
 {
   "name": "symphonic-orchestra-rest-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "A data-driven REST API for managing a symphonic orchestra's musicians and instrument inventory. Built with Node.js, Express 5, TypeScript and MySQL.",
   "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",

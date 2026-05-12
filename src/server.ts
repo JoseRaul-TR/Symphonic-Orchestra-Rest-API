@@ -5,6 +5,7 @@ import { testConnection, pool } from "./config/db.ts";
 import { Server } from "node:http";
 import { validateEnv } from "./config/env.ts";
 import { terminal } from "./utils/terminalColors.ts";
+import { config } from "./config/env.ts";
 
 const PORT = process.env.PORT ?? 3000;
 let server: Server;
@@ -61,7 +62,7 @@ const startServer = async () => {
     // 3. Start the server
     server = app.listen(PORT, () => {
       terminal.startup(
-        `-> Server körs på http://localhost:${PORT} <-`
+        `-> Server körs på http://localhost:${PORT} i ${config.env}–läge <-`
       );
       terminal.info(
         'Skriv "exit" för att stänga ner kontrollerat.',
