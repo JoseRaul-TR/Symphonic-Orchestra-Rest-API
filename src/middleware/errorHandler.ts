@@ -19,7 +19,7 @@ import { config } from "../config/env.ts";
  */
 const getErrorMessage = (err: any): string => {
   if (err instanceof AppError) return err.message;
-  return config.isDev ? (err.message ?? "Okänt fel.") : "Internt serverfel.";
+  return config.isDev ? (err?.message ?? "Okänt fel.") : "Internt serverfel.";
 };
 
 /**
@@ -50,7 +50,7 @@ const MYSQL_ERRORS: Record<string, [string, number]> = {
  *        production  → message only to avoid leaking internals.
  *   4. Send a safe JSON response to the client.
  */
-export const errorHandler = (
+export const errorHandler = async (
   err: any,
   req: Request,
   res: Response,
@@ -59,7 +59,13 @@ export const errorHandler = (
   let error: any = err;
   const ip = getClientIp(req);
 
-  logError(err, ip); // log the raw original error before transforming
+  // Try to persist the original error before any transformation.
+  // Logging failures must never break the response flow.
+  try {
+    await logError(err, ip);
+  } catch {
+    terminal.warning("Kunde inte skriva till error.log.");
+  }
 
   // Map MySQL-specific error codes to AppError
   if (err.code && err.code in MYSQL_ERRORS) {
@@ -71,14 +77,16 @@ export const errorHandler = (
   const message: string = getErrorMessage(error);
 
   // Print unexpected server errors (not AppError) to the terminal
-  if (!(error instanceof AppError)) {
-    config.isDev
-      ? terminal.error(
-          `[${statusCode}] ${err.message ?? err}\n${err.stack ?? ""}`,
-        )
-      : terminal.error(
-          `[${statusCode}] ${err.message ?? "Internal server error"}`,
-        );
+  const isUnexpected = !(error instanceof AppError) || statusCode >= 500;
+
+  if (isUnexpected) {
+    if (config.isDev) {
+      terminal.error(
+        `[${statusCode}] ${err?.message ?? err}\n${err?.stack ?? ""}`,
+      );
+    } else {
+      terminal.error(`[${statusCode}] ${err?.message ?? "Internt serverfel"}`);
+    }
   }
 
   res.status(statusCode).json({ error: message });

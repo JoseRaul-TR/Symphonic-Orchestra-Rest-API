@@ -1,6 +1,7 @@
 // src/utils/logger.ts
 import fs from "node:fs/promises";
 import path from "node:path";
+import { config } from "../config/env.ts";
 
 const ACCESS_LOG = path.join(process.cwd(), "access.log");
 const ERROR_LOG = path.join(process.cwd(), "error.log");
@@ -42,7 +43,6 @@ export const logAccess = async (
   const ipPart = ip ? ` | IP: ${ip}` : "";
   const line = `[${timestamp}] ${method.padEnd(6)} ${status} ${String(durationMs).padStart(5)}ms ${url}${ipPart}\n`;
 
-  console.log(line.trimEnd()); // visible in terminal during development
   await writeToLog(ACCESS_LOG, line);
 };
 

@@ -7,16 +7,25 @@ import { parsePaginationParam } from "../utils/pagination.ts";
 import type { MusicianFilters } from "../types/musicians.ts";
 
 export const getMusicians = asyncHandler(async (req, res) => {
-  const { page: pageStr, limit: limitStr, ...filterQuery } = req.query;
+  const {
+    page: pageStr,
+    limit: limitStr,
+    orchestra_member,
+    ...rest
+  } = req.query;
 
   const page = Math.max(1, parsePaginationParam(pageStr, 1));
   const limit = Math.min(100, Math.max(1, parsePaginationParam(limitStr, 20)));
 
-  const result = await musiciansService.getAll(
-    filterQuery as MusicianFilters,
-    page,
-    limit,
-  );
+  const filters: MusicianFilters = {
+    ...rest,
+  };
+
+  if (orchestra_member !== undefined) {
+    filters.orchestra_member = orchestra_member === "true";
+  }
+  const result = await musiciansService.getAll(filters, page, limit);
+
   res.json(result);
 });
 

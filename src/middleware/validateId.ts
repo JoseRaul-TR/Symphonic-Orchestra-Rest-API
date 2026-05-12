@@ -13,13 +13,12 @@ import { AppError } from "../utils/AppError.ts";
  * Place before any controller that uses res.locals.id:
  *   router.get("/:id", validateId, ctrl.getById);
  */
-export const validateId = (req: Request, res: Response, next: NextFunction) => {
+export const validateId = (req: Request, res: Response, next: NextFunction): void => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id <= 0) {
-    return next(
-      new AppError("Ogiltigt ID. ID måste vara ett positivt heltal.", 400),
-    );
+    return next(new AppError("Ogiltigt ID. ID måste vara ett positivt heltal.", 400));
   }
+  
   res.locals.id = id;
   next();
 };

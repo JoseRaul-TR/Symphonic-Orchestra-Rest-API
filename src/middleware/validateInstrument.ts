@@ -35,6 +35,6 @@ export const validateInstrumentRules = (
   }
 
   if (data.sell_price != null && data.sell_date == null) {
-    throw new AppError("Försäljningpris kräver ett försäljningsdatum.", 400);
+    throw new AppError("Försäljningspris kräver ett försäljningsdatum.", 400);
   }
 };

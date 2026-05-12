@@ -21,16 +21,18 @@
 export const buildWhereClause = (
   filters: Record<string, any>,
   allowedColumns: ReadonlySet<string>,
+  tableAlias?: string,
 ) => {
   const conditions: string[] = [];
   const params: any[] = [];
 
   const ignoredKeys = new Set(["sortBy", "order"]);
+  const prefix = tableAlias ? `${tableAlias}.`: "";
 
   for (const [key, value] of Object.entries(filters)) {
     if (ignoredKeys.has(key) || value === undefined || value === null) continue;
     if (!allowedColumns.has(key)) continue;
-    conditions.push(`${key} = ?`);
+    conditions.push(`${prefix}${key} = ?`);
     params.push(value);
   }
 

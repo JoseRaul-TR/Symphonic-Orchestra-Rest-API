@@ -32,26 +32,28 @@ process.on("SIGTERM", () => shutdownServer("SIGTERM"));
 process.on("SIGINT", () => shutdownServer("SIGINT"));
 
 // Way 2 – Interactive terminal input during development
-process.stdin.on("data", (data) => {
-  const input = data.toString().trim().toLowerCase();
-  if (
-    [
-      "quit",
-      "close",
-      "bye",
-      "exit",
-      "ciao",
-      "hasta la vista",
-      "vi ses",
-    ].includes(input)
-  ) {
-    shutdownServer("stdin");
-  }
-});
+if (config.isDev) {
+  process.stdin.on("data", (data) => {
+    const input = data.toString().trim().toLowerCase();
+    if (
+      [
+        "quit",
+        "close",
+        "bye",
+        "exit",
+        "ciao",
+        "hasta la vista",
+        "vi ses",
+      ].includes(input)
+    ) {
+      shutdownServer("stdin");
+    }
+  });
+}
 
 const startServer = async () => {
   try {
-    validateEnv();          // 1. Verify all required env vars exist
+    validateEnv(); // 1. Verify all required env vars exist
     await testConnection(); // 2. Verify MySQL connectivity
     terminal.db("Databasanslutning lyckades.");
     // 3. Start the server

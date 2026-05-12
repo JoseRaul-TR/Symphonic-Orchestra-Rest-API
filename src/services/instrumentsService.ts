@@ -152,19 +152,17 @@ export const instrumentsService = {
   getInventoryWithOwners: async (
     filters: InstrumentFilters,
   ): Promise<InstrumentWithOwner[]> => {
-    const { whereSql, params } = buildWhereClause(filters, FILTERABLE_COLUMNS);
-
-    // Prefix each column reference in WHERE with "i." to avoid ambiguity in the JOIN
-    const aliasedWhere = whereSql.replace(
-      /(\bWHERE\b|\bAND\b)\s+(\w+)/g,
-      "$1 i.$2",
+    const { whereSql, params } = buildWhereClause(
+      filters,
+      FILTERABLE_COLUMNS,
+      "i",
     );
 
     let sql =
-      `SELECT i.*, m.surname AS owner_surname, m.name AS owner_name` +
-      ` FROM instruments i` +
+      `SELECT i.*, m.surname AS owner_surname, m.name AS owner_name ` +
+      `FROM instruments i ` +
       `LEFT JOIN musicians m ON i.owner_id = m.id` +
-      aliasedWhere +
+      whereSql +
       buildOrderClause(filters.sortBy, filters.order, "i");
 
     return await query<InstrumentWithOwner[]>(sql, params);
