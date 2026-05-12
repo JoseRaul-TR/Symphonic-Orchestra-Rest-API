@@ -3,20 +3,17 @@ import "dotenv/config";
 import app from "./app.ts";
 import { testConnection, pool } from "./config/db.ts";
 import { Server } from "node:http";
-import { validateEnv } from "./config/env.ts";
+import { validateEnv, config } from "./config/env.ts";
 import { terminal } from "./utils/terminalColors.ts";
-import { config } from "./config/env.ts";
 
-const PORT = process.env.PORT ?? 3000;
 let server: Server;
 
-// --- Controlled Server Shutdown ---
+// --- Controlled Server Shutdown (one entry point, three triggers)---
 const shutdownServer = async (trigger: string) => {
   terminal.shutdown(`Avslutar servern (${trigger})...\n`);
-
   try {
     if (server) {
-      // Stop accepting new connections and wait until the active ones end
+      // Stop accepting new connections and wait for actives ones to finish
       await new Promise<void>((resolve, reject) =>
         server.close((err) => (err ? reject(err) : resolve())),
       );
@@ -30,11 +27,11 @@ const shutdownServer = async (trigger: string) => {
   }
 };
 
-// Way 1 – Signs from OS (SIGTERM y SIGINT)
-process.on("SIGTERM", () => shutdownServer("SIGTERM")); // Docker/PM2
-process.on("SIGINT", () => shutdownServer("SIGINT")); // Ctrl+C
+// Way 1 – OS signals: SIGTERM is used by Docker/PM2, SIGINT by Ctrl+C
+process.on("SIGTERM", () => shutdownServer("SIGTERM"));
+process.on("SIGINT", () => shutdownServer("SIGINT"));
 
-// Way 2 – Text input from terminal (custom flags)
+// Way 2 – Interactive terminal input during development
 process.stdin.on("data", (data) => {
   const input = data.toString().trim().toLowerCase();
   if (
@@ -54,19 +51,15 @@ process.stdin.on("data", (data) => {
 
 const startServer = async () => {
   try {
-    // 1. Check that all the environment variables exist.
-    validateEnv();
-    // 2. Check that connection with DB
-    await testConnection();
+    validateEnv();          // 1. Verify all required env vars exist
+    await testConnection(); // 2. Verify MySQL connectivity
     terminal.db("Databasanslutning lyckades.");
     // 3. Start the server
-    server = app.listen(PORT, () => {
+    server = app.listen(config.port, () => {
       terminal.startup(
-        `-> Server körs på http://localhost:${PORT} i ${config.env}–läge <-`
+        `-> Server körs på http://localhost:${config.port} i ${config.env}–läge <-`,
       );
-      terminal.info(
-        'Skriv "exit" för att stänga ner kontrollerat.',
-      );
+      terminal.info('Skriv "exit" för att stänga ner kontrollerat.');
     });
   } catch (err: any) {
     terminal.error(`Kunde inte starta servern: ${err.message}`);

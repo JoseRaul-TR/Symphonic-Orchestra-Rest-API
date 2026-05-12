@@ -7,20 +7,26 @@ import { terminal } from "../utils/terminalColors.ts";
 import { config } from "../config/env.ts";
 
 /**
- * Determines the error message sent to the client.
+ * Determines the error message sent to the client based on error type and environment.
  *
- * - AppError messages are always safe to expose (intentionally written for clients).
- * - In development, unknown errors expose their raw message to ease debugging.
- * - In production, unknown errors return a generic string — no internals leaked.
+ * Safety rules:
+ *   - AppError messages are intentionally written for clients — always safe to expose.
+ *   - In development, unknown errors expose their raw message to ease debugging.
+ *   - In production, unknown errors return a generic string — no internals are leaked.
  *
- * @param err - The (possibly transformed) error object
+ * @param err - The error after MySQL code mapping (may be an AppError)
  * @returns     Client-safe message string
  */
 const getErrorMessage = (err: any): string => {
   if (err instanceof AppError) return err.message;
-  if (config.isDev) return err.message ?? "unknown error";
-  return "Internt serverfel.";
+  return config.isDev ? (err.message ?? "Okänt fel.") : "Internt serverfel.";
 };
+
+/**
+ * Maps MySQL error codes to [clientMessage, httpStatus] tuples.
+ * Using a lookup object instead of chained if-statements keeps the handler DRY
+ * and makes it trivial to add new MySQL error mappings.
+ */
 
 const MYSQL_ERRORS: Record<string, [string, number]> = {
   ER_DUP_ENTRY: ["Posten finns redan.", 409],
@@ -34,12 +40,14 @@ const MYSQL_ERRORS: Record<string, [string, number]> = {
 };
 
 /**
- * Central Express error-handling middleware — must be last in app.ts.
+ * Central Express error-handling middleware — must be the last middleware in app.ts.
  *
  * Flow:
- *   1. Log the original error (with IP) before any transformation.
- *   2. Map known MySQL codes to AppErrors with appropriate HTTP status.
- *   3. Print critical (500) errors to the terminal in development.
+ *   1. Log the original error (with client IP) to error.log before any transformation.
+ *   2. Map known MySQL error codes to user-friendly AppErrors with correct HTTP status.
+ *   3. Print unexpected server errors to the terminal:
+ *        development → full stack trace for debugging.
+ *        production  → message only to avoid leaking internals.
  *   4. Send a safe JSON response to the client.
  */
 export const errorHandler = (
@@ -51,9 +59,9 @@ export const errorHandler = (
   let error: any = err;
   const ip = getClientIp(req);
 
-  logError(err, ip); // always log the raw original error
+  logError(err, ip); // log the raw original error before transforming
 
-  // Map MySQL error codes -> AppError
+  // Map MySQL-specific error codes to AppError
   if (err.code && err.code in MYSQL_ERRORS) {
     const [message, status] = MYSQL_ERRORS[err.code]!;
     error = new AppError(message, status);
@@ -62,12 +70,15 @@ export const errorHandler = (
   const statusCode: number = error.statusCode ?? 500;
   const message: string = getErrorMessage(error);
 
-  // Print unexpected server errors to the terminal (dev + prod)
-  // but show full stack only in development
+  // Print unexpected server errors (not AppError) to the terminal
   if (!(error instanceof AppError)) {
     config.isDev
-      ? terminal.error(`[${statusCode}] ${err.message}\n${err.stack}`)
-      : terminal.error(`[${statusCode}] ${err.message}`);
+      ? terminal.error(
+          `[${statusCode}] ${err.message ?? err}\n${err.stack ?? ""}`,
+        )
+      : terminal.error(
+          `[${statusCode}] ${err.message ?? "Internal server error"}`,
+        );
   }
 
   res.status(statusCode).json({ error: message });

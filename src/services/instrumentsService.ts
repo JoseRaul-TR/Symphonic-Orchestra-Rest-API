@@ -46,10 +46,14 @@ const UPDATABLE_FIELDS: (keyof CreateInstrumentDTO)[] = [
  * Builds a safe SQL ORDER BY clause from validated sort parameters.
  *
  * @param sortBy     - Column name or the virtual alias "value"
- * @param order      - Sort direction
- * @param tableAlias - Optional table alias prefix (e.g. "i" → "i.column_name").
- *                     Needed in JOINs to disambiguate column names.
- * @throws AppError 400 if sortBy is not whitelisted
+ * @param order      - Sort direction (ASC / DESC)
+ * @param tableAlias - Optional table alias prefix for JOIN queries (e.g. "i" → "i.column").
+ *                     Omit for simple single-table SELECT statements.
+ *
+ * Supports the virtual field "value" which sorts by estimated_value
+ * with purchase_price as fallback via COALESCE.
+ *
+ * @throws AppError 400 if sortBy is not in the whitelist
  */
 const buildOrderClause = (
   sortBy?: string,
@@ -73,6 +77,7 @@ const buildOrderClause = (
 };
 
 export const instrumentsService = {
+  /** Returns a paginated list of instruments with optional filters and sorting. */
   getAll: async (
     filters: InstrumentFilters,
     page: number,
@@ -87,14 +92,12 @@ export const instrumentsService = {
     const total = Number(countRows[0]?.total ?? 0);
 
     let sql = `SELECT * FROM instruments${whereSql}`;
-
     sql += buildOrderClause(filters.sortBy, filters.order);
 
     const offset = (page - 1) * limit;
     sql += " LIMIT ? OFFSET ?";
 
     const data = await query<Instrument[]>(sql, [...params, limit, offset]);
-
     return {
       data,
       pagination: buildPaginationMeta(total, page, limit),
@@ -142,16 +145,16 @@ export const instrumentsService = {
   },
 
   /**
-   * Returns the full instrument inventory with musician owner details via LEFT JOIN.
-   * Supports the same filters and sorting as getAll, using table alias "i"
-   * to disambiguate columns shared between instruments and musicians.
+   * Returns the full instrument inventory joined with musician owner data.
+   * Supports the same filter and sort options as getAll.
+   * Uses table alias "i" to disambiguate column names in the JOIN.
    */
   getInventoryWithOwners: async (
     filters: InstrumentFilters,
   ): Promise<InstrumentWithOwner[]> => {
     const { whereSql, params } = buildWhereClause(filters, FILTERABLE_COLUMNS);
 
-    // Prefix WHERE conditions with table alias to avoid ambiguity in the JOIN
+    // Prefix each column reference in WHERE with "i." to avoid ambiguity in the JOIN
     const aliasedWhere = whereSql.replace(
       /(\bWHERE\b|\bAND\b)\s+(\w+)/g,
       "$1 i.$2",

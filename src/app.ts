@@ -9,8 +9,8 @@ import v1Router from "./routes/v1.ts";
 
 const app = express();
 
-// In production: only allow requests from the configured frontend origin.
-// In development: allow all origins for easy local testing.
+// In production: restrict CORS to the configured frontend origin.
+// In development: allow all origins for easy local testing with curl.
 app.use(
   cors({
     origin: config.isProd ? config.frontendUrl : "*",
@@ -25,7 +25,7 @@ app.use(requestLogger);
 // Health check – intentionally unversioned so monitoring tools can always reach it
 app.get("/health", (_req, res) => {
   res.json({
-    status: "OK",
+    status: "ok",
     env: config.env,
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),

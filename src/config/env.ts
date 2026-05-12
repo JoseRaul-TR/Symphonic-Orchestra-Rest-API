@@ -1,5 +1,4 @@
 // src/config/env.ts
-import { apiKeyAuth } from "../middleware/auth.ts";
 import { terminal } from "../utils/terminalColors.ts";
 
 const REQUIRED_VARS = [
@@ -13,7 +12,8 @@ const REQUIRED_VARS = [
 
 /**
  * Validates that all required environment variables are set.
- * Throws on missing vars so the server never starts in a broken state.
+ * Called once at server startup — throws if any are missing so the
+ * server never starts in a broken or unauthenticated state.
  */
 export const validateEnv = (): void => {
   const missing = REQUIRED_VARS.filter((v) => !process.env[v]);
@@ -24,12 +24,21 @@ export const validateEnv = (): void => {
 };
 
 /**
- * Typed, centralised config object derived from environment variables.
+ * Typed, centralised configuration object derived from environment variables.
+ * Resolved at module load time (after dotenv/config runs in server.ts).
  *
- * Usage across the app:
- *   import { config } from "../config/env.ts";
- *   config.isDev   → true in development
- *   config.db.port → MySQL port
+ * Use this object instead of accessing process.env directly to get
+ * TypeScript types and a single source of truth across the application.
+ *
+ * Flags:
+ *   config.isDev  → true when NODE_ENV is "development" (default if unset)
+ *   config.isProd → true only when NODE_ENV is explicitly "production"
+ *
+ * Frontend compatibility:
+ *   config.frontendUrl → used in app.ts CORS origin for production
+ *
+ * Database:
+ *   config.db.* → mirrors the connection pool config in db.ts
  */
 export const config = {
   // Server
