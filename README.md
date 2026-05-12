@@ -4,7 +4,7 @@
 
 A data-driven REST API for managing a symphonic orchestra — musicians,
 instrument inventory and their relationships.
-Built with **Node.js**, **Express 5**, **TypeScript** (strict mode) and **MySQL**.
+Built with **Node.js**, **Express**, **TypeScript** (strict mode) and **MySQL**.
 
 ## Features
 
@@ -170,7 +170,7 @@ curl -X POST "http://localhost:3000/api/v1/musicians/" \
 ```
 
 ## Project Structure
-
+```
 src/
 ├── config/ # env validation, DB pool, typed config object
 ├── controllers/ # HTTP layer: parse request, send response
@@ -179,6 +179,7 @@ src/
 ├── services/ # business logic and DB queries
 ├── types/ # TypeScript interfaces and DTOs
 └── utils/ # shared helpers (pagination, logging, async wrapper)
+```
 
 ## Logging
 
