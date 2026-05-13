@@ -7,15 +7,16 @@ import { getClientIp } from "../utils/requestUtils.ts";
 const MUTATION_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 /**
- * Express middleware that logs every HTTP request to app.log and the console.
+ * Express middleware that logs every HTTP request to access.log.
  *
  * IP is included only when it adds security value:
  *   - All mutation methods (POST / PUT / PATCH / DELETE)
  *   - Any response with status >= 400 (client or server errors)
- * Successful GET requests are logged without IP to reduce noise.
+ * Successful GET requests are logged without IP to reduce noise
+ * and avoid unnecessary data collection.
  *
- * The "finish" event fires after the response is fully flushed,
- * so res.statusCode is guaranteed to be final at that point.
+ * Uses the "finish" event which fires after the response is fully flushed,
+ * so res.statusCode is guaranteed to be its final value.
  */
 export const requestLogger = (
   req: Request,

@@ -11,15 +11,13 @@ export const getMusicians = asyncHandler(async (req, res) => {
     page: pageStr,
     limit: limitStr,
     orchestra_member,
-    ...rest
+    ...filterQuery
   } = req.query;
 
   const page = Math.max(1, parsePaginationParam(pageStr, 1));
   const limit = Math.min(100, Math.max(1, parsePaginationParam(limitStr, 20)));
 
-  const filters: MusicianFilters = {
-    ...rest,
-  };
+  const filters = filterQuery as MusicianFilters;
 
   if (orchestra_member !== undefined) {
     filters.orchestra_member = orchestra_member === "true";

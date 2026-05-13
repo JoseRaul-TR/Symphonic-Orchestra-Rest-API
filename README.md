@@ -88,15 +88,16 @@ Base URL: `http://localhost:3000/api/v1`
 
 ### Authentication
 
-Write operations (POST / PUT / PATCH / DELETE) require the header: "x-api-key: [your_api_key]"
+Write operations (POST / PUT / PATCH / DELETE) require the header:
+```
+X-API-Key: your_api_key_here
+```
 
 ### Health Check
 
 Returns server status, environment and uptime. Not versioned.
 
 ### Endpoints
-
-Returns server status, environment and uptime. Not versioned.
 
 ### Musicians `/api/v1/musicians`
 

@@ -12,11 +12,18 @@
  *
  * @param filters        - Raw filter object, typically from req.query
  * @param allowedColumns - Set of column names permitted to appear in WHERE
+ * @param tableAlias     - Optional table alias prefix for JOIN queries
+ *                         (e.g. "i" → "i.column = ?"). Omit for simple SELECTs.
  * @returns                Object with the SQL fragment and its bound parameters
  *
  * @example
- *   buildWhereClause({ section: "Strings", sortBy: "name" }, FILTERABLE_COLUMNS)
- *    → { whereSql: " WHERE section = ?", params: ["Strings"] }
+ *   Simple SELECT (no alias)
+ *   buildWhereClause({ section: "Strings" }, FILTERABLE_COLUMNS)
+ *   → { whereSql: " WHERE section = ?", params: ["Strings"] }
+ *
+ *   JOIN query (with alias)
+ *   buildWhereClause({ owner_type: "Musician" }, FILTERABLE_COLUMNS, "i")
+ *   → { whereSql: " WHERE i.owner_type = ?", params: ["Musician"] }
  */
 export const buildWhereClause = (
   filters: Record<string, any>,
@@ -27,7 +34,7 @@ export const buildWhereClause = (
   const params: any[] = [];
 
   const ignoredKeys = new Set(["sortBy", "order"]);
-  const prefix = tableAlias ? `${tableAlias}.`: "";
+  const prefix = tableAlias ? `${tableAlias}.` : "";
 
   for (const [key, value] of Object.entries(filters)) {
     if (ignoredKeys.has(key) || value === undefined || value === null) continue;

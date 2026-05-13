@@ -1,15 +1,13 @@
 // src/utils/logger.ts
 import fs from "node:fs/promises";
 import path from "node:path";
-import { config } from "../config/env.ts";
 
 const ACCESS_LOG = path.join(process.cwd(), "access.log");
 const ERROR_LOG = path.join(process.cwd(), "error.log");
 
 /**
- * Appends a raw string message to the log file.
- * Logs a console warning if the write fails — never throws,
- * so a logging failure never crashes the application.
+ * Appends a raw string message to a log file.
+ * Never throws — a logging failure must never crash the application.
  */
 const writeToLog = async (file: string, message: string): Promise<void> => {
   try {
@@ -20,11 +18,11 @@ const writeToLog = async (file: string, message: string): Promise<void> => {
 };
 
 /**
- * Logs an HTTP request entry to the console and to app.log.
+ * Logs an HTTP request entry to access.log.
  *
- * The IP address is optional: callers (requestLogger middleware) decide
- * whether to include it based on the HTTP method and response status,
- * keeping GET-success logs lightweight and avoiding unnecessary data collection.
+ * The IP address is optional: the requestLogger middleware decides whether
+ * to include it based on HTTP method and response status, keeping successful
+ * GET logs lightweight and avoiding unnecessary data collection.
  *
  * @param method     - HTTP method (GET, POST, …)
  * @param url        - Full request URL including query string
@@ -47,9 +45,9 @@ export const logAccess = async (
 };
 
 /**
- * Logs a full error entry to app.log, including the stack trace.
+ * Logs a full error entry to error.log, including the stack trace.
  * Always called with the original error (before message transformation)
- * so the raw MySQL codes and original stack are preserved in the log.
+ * so raw MySQL codes and the original stack trace are preserved.
  *
  * @param err - Any error object (AppError, MySQL error, or generic Error)
  * @param ip  - Client IP address of the request that triggered the error

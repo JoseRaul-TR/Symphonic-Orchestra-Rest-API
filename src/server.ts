@@ -13,13 +13,13 @@ const shutdownServer = async (trigger: string) => {
   terminal.shutdown(`Avslutar servern (${trigger})...\n`);
   try {
     if (server) {
-      // Stop accepting new connections and wait for actives ones to finish
+      // Stop accepting new connections and wait for active ones to finish
       await new Promise<void>((resolve, reject) =>
         server.close((err) => (err ? reject(err) : resolve())),
       );
     }
     await pool.end();
-    terminal.success("Servern och database stängda. ¡Hasta la vista!\n");
+    terminal.success("Servern och databasen stängda. ¡Hasta la vista!\n");
     process.exit(0);
   } catch (err: any) {
     terminal.error(`Fel vid nedstängning: ${err.message}`);
